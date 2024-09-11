@@ -1,18 +1,23 @@
 {
   "name": "flex-drag",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
   "author": {
-    "name": "emryschen",
-    "email": "1140710816@qq.com"
+    "name": "emryschen"
   },
+  "license": "ISC",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chenqy-yh/flex-drag.git"
+  },
   "dependencies": {
+    "@types/node": "^22.5.4",
+    "ahooks": "^3.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

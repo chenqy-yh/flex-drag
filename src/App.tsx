@@ -1,14 +1,39 @@
-import FlexDrag from "./core/flex-drag";
+import { useEffect, useRef } from "react";
+import { useFlexDrag } from "@/hooks";
 
 function App() {
-  const flexDrag = new FlexDrag({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
+  const sonRef = useRef<HTMLDivElement>(null);
+  const parRef = useRef<HTMLDivElement>(null);
+
+  useFlexDrag(sonRef, {
+    x: "10%",
+    y: "10%",
+    width: "20%",
+    height: "20%",
   });
-  console.log(flexDrag);
-  return <div>this is a test</div>;
+
+  return (
+    <div>
+      f this is a test
+      <style>
+        {`
+        #par {
+          width: 200px;
+          height: 200px;
+          background: red;
+        }
+        #son {
+          background: blue;
+        }
+      `}
+      </style>
+      <div id="par" ref={parRef}>
+        <div id="son" ref={sonRef}>
+          123
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default App;
