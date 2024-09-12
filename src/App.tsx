@@ -1,36 +1,69 @@
-import { useEffect, useRef } from "react";
-import { useFlexDrag } from "@/hooks";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { FlexDrag } from "@/core";
 
 function App() {
-  const sonRef = useRef<HTMLDivElement>(null);
   const parRef = useRef<HTMLDivElement>(null);
+  const [sonList, setSonList] = useState<
+    {
+      el: HTMLElement;
+      flexDrag: FlexDrag;
+    }[]
+  >([]);
 
-  useFlexDrag(sonRef, {
-    x: "10%",
-    y: "10%",
-    width: "20%",
-    height: "20%",
-  });
+  const addFlexDrag = useCallback((key: number) => {
+    const newDiv = document.createElement("div");
+    newDiv.textContent = `son${key}`;
+    newDiv.style.background = "#fefefe";
+    newDiv.style.border = "1px solid black";
+
+    parRef.current?.appendChild(newDiv);
+    const flexDrag = new FlexDrag(newDiv, {
+      x: "50%",
+      y: "50%",
+      width: "100px",
+      height: "100px",
+    });
+    setSonList((prev) => {
+      return [...prev, { el: newDiv, flexDrag }];
+    });
+  }, []);
 
   return (
-    <div>
-      f this is a test
-      <style>
-        {`
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          height: "60px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <button onClick={() => addFlexDrag(sonList.length)}>add</button>
+      </div>
+      <div
+        style={{
+          height: "100%",
+        }}
+      >
+        <style>
+          {`
         #par {
-          width: 200px;
-          height: 200px;
-          background: red;
+          width: 100%;
+          height: 100%;
+          background: #eeeeee;
         }
         #son {
           background: blue;
         }
       `}
-      </style>
-      <div id="par" ref={parRef}>
-        <div id="son" ref={sonRef}>
-          123
-        </div>
+        </style>
+        <div id="par" ref={parRef}></div>
       </div>
     </div>
   );

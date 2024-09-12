@@ -14,7 +14,8 @@ export const useFlexDrag = (
       flexDragRef.current = new FlexDrag(ref.current, config);
     }
     return () => {
-      flexDragRef.current?.destory();
+      flexDragRef.current?.destroy();
     };
   }, [ref, config]);
+  return flexDragRef;
 };

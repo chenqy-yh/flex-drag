@@ -5,9 +5,10 @@ export type FlexDragConfig = {
   y: string;
   width: string;
   height: string;
+  dragable?: boolean;
 };
 
-export type FlexValue<U extends ValueUnit = "px"> = {
+export type FlexValue = {
   value: number;
-  unit: U;
+  unit: ValueUnit;
 };
