@@ -1,15 +1,14 @@
-import { NodeMoveEvent } from "@/core/types";
-import { useNodesStore } from "@/store";
+import { NodeMoveEvent, NodeRef } from "@/core/types";
 
-const snapGap = 10;
+const defaultSnapGap = 15;
 
-const nodeSnap = (e: NodeMoveEvent) => {
-  const { nodes } = useNodesStore();
-
-  if (nodes.length < 2) return;
-
+export const nodeSnap = (e: NodeMoveEvent, nodes: NodeRef[], gap?: number) => {
   const { node: tarNode, x, y } = e;
-  if (!tarNode || !tarNode.el) return;
+
+  const snapGap = gap || defaultSnapGap;
+
+  if (nodes.length < 2 || !tarNode || !tarNode.el) return { x, y };
+
   const nx = x;
   const nx2 = x + tarNode.el.clientWidth;
   const ny = y;
@@ -44,15 +43,9 @@ const nodeSnap = (e: NodeMoveEvent) => {
     dx: _minXGap < snapGap ? _minXGap : 0,
     dy: _minYGap < snapGap ? _minYGap : 0,
   };
-  tarNode.setNodeState((state) => {
-    return {
-      ...state,
-      x: state.x + delta.dx,
-      y: state.y + delta.dy,
-    };
-  });
-};
-
-export const useSnap = () => {
-  return { nodeSnap };
+  const nextPos = {
+    x: nx + delta.dx,
+    y: ny + delta.dy,
+  };
+  return nextPos;
 };

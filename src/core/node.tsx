@@ -1,7 +1,7 @@
-import { useClickSelect, useDraggable, useRegister } from "@/hooks";
+import { useDraggable, useRegister } from "@/hooks";
 import { useSelectedNodeStore } from "@/store";
-import { useCallback, useMemo } from "react";
-import type { NodeProps } from "./types";
+import { useMemo } from "react";
+import type { NodeMoveEvent, NodeProps } from "./types";
 
 const FlexDragNode: React.FC<NodeProps> = (props) => {
   const { x, y, width, height, data, parentRef, paint } = props;
@@ -20,10 +20,17 @@ const FlexDragNode: React.FC<NodeProps> = (props) => {
     return selectedNodes.some((node) => node.el === targetRef.current);
   }, [selectedNodes]);
 
+
+  const onDragEnd = (e: NodeMoveEvent) => {
+    paint();
+  };
+
+
   useDraggable({
     targetRef,
     parentRef,
     setNodeState: setNodeState,
+    onDragEnd: onDragEnd,
   });
 
   const handleMouseDown = () => {
@@ -53,7 +60,6 @@ const FlexDragNode: React.FC<NodeProps> = (props) => {
         userSelect: "none",
       }}
       onMouseDownCapture={handleMouseDown}
-      onMouseMove={paint as any}
     >
       {data} - {isSeleted ? "selected" : "unselected"}
     </div>

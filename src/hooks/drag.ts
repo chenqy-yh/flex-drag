@@ -1,36 +1,48 @@
-import { Node, NodeRef } from "@/core/types";
-import { useSelectedNodeStore } from "@/store";
-import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Node, NodeMoveEvent, NodeRef } from "@/core/types";
+import { useNodesStore, useSelectedNodeStore } from "@/store";
 import { minmax } from "@/utils/common";
+import { RefObject, useEffect, useRef, useState } from "react";
+import { nodeSnap } from "./snap";
 
 type Position = {
   x: number;
   y: number;
 };
 
-type DragEvent = {
-  nodes: NodeRef[];
-};
-
-type DragHandler = (e: DragEvent) => void;
+type DragHandler = (e: NodeMoveEvent) => void;
 
 type DragConfig = {
   targetRef: RefObject<HTMLDivElement>;
   parentRef: RefObject<HTMLDivElement>;
+  snap?: boolean | { value: number };
   setNodeState: React.Dispatch<React.SetStateAction<Node>>;
   onDragStart?: DragHandler;
   onDragEnd?: DragHandler;
 };
 
+const formatOpts = (opts: DragConfig) => {
+  if (typeof opts.snap === "undefined") {
+    opts.snap = true;
+  }
+  return opts;
+};
+
 export function useDraggable(config: DragConfig) {
-  const { targetRef: elRef, parentRef } = config;
+  const {
+    targetRef: elRef,
+    parentRef,
+    snap,
+    onDragStart,
+    onDragEnd,
+  } = formatOpts(config);
 
   const offset = useRef<Position[]>([]);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
-  const { selectedNodes, addNodeToSelected, clearSelectedNodes } =
-    useSelectedNodeStore();
+  const { nodes } = useNodesStore();
+
+  const { selectedNodes } = useSelectedNodeStore();
 
   useEffect(() => {
     const element = elRef.current;
@@ -42,15 +54,6 @@ export function useDraggable(config: DragConfig) {
     const handleMouseDown = (e: MouseEvent) => {
       setIsDragging(true);
 
-      // const curIsSelected = checkIsSelected(element);
-      // if (!curIsSelected) {
-      //   clearSelectedNodes();
-      //   addNodeToSelected({
-      //     el: element,
-      //     setNodeState: config.setNodeState,
-      //   });
-      // }
-
       offset.current = [];
       selectedNodes.forEach((nodeRef) => {
         if (!nodeRef.el) return;
@@ -59,7 +62,6 @@ export function useDraggable(config: DragConfig) {
           y: e.clientY - parent.offsetTop - nodeRef.el.offsetTop,
         });
       });
-      console.log("drag down:", offset, selectedNodes);
       e.stopPropagation();
     };
 
@@ -93,31 +95,45 @@ export function useDraggable(config: DragConfig) {
         return;
 
       selectedNodes.forEach((nodeRef, index) => {
-        const { setNodeState } = nodeRef;
-        setNodeState((state) => {
-          if (!nodeRef.el) return state;
-          const new_state = {
-            ...state,
-            x: `${minmax(
-              clientX - offset.current[index].x - parent.offsetLeft,
-              0,
-              parent.offsetWidth - nodeRef.el.offsetWidth
-            )}px`,
-            y: `${minmax(
-              clientY - offset.current[index].y - parent.offsetTop,
-              0,
-              parent.offsetHeight - nodeRef.el.offsetHeight
-            )}px`,
-          };
-
-          return new_state;
-        });
+        const { el } = nodeRef;
+        if (!el) return;
+        const x = minmax(
+          clientX - offset.current[index].x - parent.offsetLeft,
+          0,
+          parent.offsetWidth - el.offsetWidth
+        );
+        const y = minmax(
+          clientY - offset.current[index].y - parent.offsetTop,
+          0,
+          parent.offsetHeight - el.offsetHeight
+        );
+        moveNode(nodeRef, x, y);
       });
       e.stopPropagation();
     };
 
     const handleMouseUp = (e: MouseEvent) => {
       setIsDragging(false);
+    };
+
+    const moveNode = (nodeRef: NodeRef, x: number, y: number) => {
+      const { setNodeState } = nodeRef;
+      const moveEvt = { node: nodeRef, x, y };
+      onDragStart && onDragStart(moveEvt);
+      // snap
+      const snapValue = typeof snap === "object" ? snap.value : undefined;
+      const nodeSnapResult = snap
+        ? nodeSnap(moveEvt, nodes, snapValue)
+        : { x, y };
+      const { x: fx, y: fy } = nodeSnapResult;
+      setNodeState((state) => {
+        return {
+          ...state,
+          x: fx,
+          y: fy,
+        };
+      });
+      onDragEnd && onDragEnd(moveEvt);
     };
 
     element.addEventListener("mousedown", handleMouseDown);

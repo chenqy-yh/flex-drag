@@ -5,8 +5,8 @@ type ValueUnit = "px" | "%";
 // export type StateUpdater<T> = T | ((data: T) => T) | (() => T);
 
 export type Node = {
-  x: string;
-  y: string;
+  x: number;
+  y: number;
   width: string;
   height: string;
   data?: ReactNode;

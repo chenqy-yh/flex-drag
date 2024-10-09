@@ -6,8 +6,8 @@ function App() {
 
   const addFlexDrag = useCallback((key: number) => {
     const node: FlexDragConfig = {
-      x: "10%",
-      y: "10%",
+      x: 10,
+      y: 10,
       width: "max-content",
       height: "max-content",
       data: `node ${key}`,
