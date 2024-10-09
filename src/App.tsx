@@ -1,31 +1,18 @@
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { FlexDrag } from "@/core";
+import { FlexDragConfig, Box } from "@/core";
+import { useCallback, useState } from "react";
 
 function App() {
-  const parRef = useRef<HTMLDivElement>(null);
-  const [sonList, setSonList] = useState<
-    {
-      el: HTMLElement;
-      flexDrag: FlexDrag;
-    }[]
-  >([]);
+  const [sonList, setSonList] = useState<FlexDragConfig[]>([]);
 
   const addFlexDrag = useCallback((key: number) => {
-    const newDiv = document.createElement("div");
-    newDiv.textContent = `son${key}`;
-    newDiv.style.background = "#fefefe";
-    newDiv.style.border = "1px solid black";
-
-    parRef.current?.appendChild(newDiv);
-    const flexDrag = new FlexDrag(newDiv, {
-      x: "50%",
-      y: "50%",
-      width: "100px",
-      height: "100px",
-    });
-    setSonList((prev) => {
-      return [...prev, { el: newDiv, flexDrag }];
-    });
+    const node: FlexDragConfig = {
+      x: "10%",
+      y: "10%",
+      width: "max-content",
+      height: "max-content",
+      data: `node ${key}`,
+    };
+    setSonList((prev) => [...prev, node]);
   }, []);
 
   return (
@@ -48,22 +35,12 @@ function App() {
       </div>
       <div
         style={{
-          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <style>
-          {`
-        #par {
-          width: 100%;
-          height: 100%;
-          background: #eeeeee;
-        }
-        #son {
-          background: blue;
-        }
-      `}
-        </style>
-        <div id="par" ref={parRef}></div>
+        <Box width={1000} height={500} nodes={sonList} />
       </div>
     </div>
   );
